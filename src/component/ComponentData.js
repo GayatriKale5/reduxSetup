@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import { createName, get_all_names } from '../store/actions/action';
+import {
+    createName,
+    get_all_names,
+    updateName,
+    deleteObject
+} from '../store/actions/action';
 
 
 class Demo extends Component {
@@ -8,6 +13,9 @@ class Demo extends Component {
         super(props);
         this.state = {
             value: '',
+            id: "",
+            updateName: "",
+            deleteId: "",
             namesList: [],
         };
     }
@@ -19,14 +27,11 @@ class Demo extends Component {
 
     static getDerivedStateFromProps(nextProps, nextState) {
         console.log("Get derived state:", nextProps.namesListStore);
-        // this.setState({
-        //     namesList: nextProps.namesListStore
-        // });
-        return null;
+        return { namesList: nextProps.namesListStore.names };
     };
 
-    handleChange = (event) => {
-        this.setState({ value: event.target.value });
+    handleChange = (e) => {
+        this.setState({ [e.target.name]: e.target.value });
     };
 
     handleSubmit = (event) => {
@@ -35,25 +40,79 @@ class Demo extends Component {
             name: this.state.value
         }
         this.props.createName(formdata);
+        this.props.get_all_names();
+    };
+
+    handleSubmitUpdate = (e) => {
+        e.preventDefault();
+        let formData = {
+            id: this.state.id,
+            name: this.state.updateName,
+            // patch works as update and insert
+            // gender: this.state.updateName,
+        }
+        this.props.updateName(formData);
+        this.props.get_all_names();
+    };
+
+    handleSubmitDelete = (e) => {
+        e.preventDefault();
+        let formData = {
+            id: this.state.deleteId,
+        }
+        this.props.deleteObject(formData);
+        this.props.get_all_names();
     };
 
     render() {
         return (
             <>
+                {/* post and get */}
                 <form onSubmit={this.handleSubmit}>
                     <label>
                         Name:
                         <input type="text"
+                            name="value"
                             value={this.state.value}
                             onChange={this.handleChange} />
                     </label>
                     <input type="submit" value="Submit" />
                 </form>
                 <div>
-                    {/* {this.state.namesList.map((val, i) => (
-                        <p>{val}</p>
-                    ))} */}
+                    {console.log(this.state.namesList)}
+                    {this.state.namesList.map((val, i) => (
+                        <p key={i}>{val.name}</p>
+                    ))}
                 </div>
+
+                {/* update */}
+                <form onSubmit={this.handleSubmitUpdate}>
+                    <label>
+                        Id:
+                        <input type="number"
+                            name="id"
+                            value={this.state.id}
+                            onChange={this.handleChange} />
+                        Name:
+                        <input type="text"
+                            name="updateName"
+                            value={this.state.updateName}
+                            onChange={this.handleChange} />
+                    </label>
+                    <input type="submit" value="Update" />
+                </form>
+
+                {/* delete */}
+                <form onSubmit={this.handleSubmitDelete}>
+                    <label>
+                        Id:
+                        <input type="number"
+                            name="deleteId"
+                            value={this.state.deleteId}
+                            onChange={this.handleChange} />
+                    </label>
+                    <input type="submit" value="Delete" />
+                </form>
             </>
         )
     }
@@ -67,4 +126,9 @@ const mapStateToProps = state => ({
     namesListStore: state.names
 })
 
-export default connect(mapStateToProps, { createName, get_all_names })(Demo)
+export default connect(mapStateToProps, {
+    createName,
+    get_all_names,
+    updateName,
+    deleteObject
+})(Demo)
